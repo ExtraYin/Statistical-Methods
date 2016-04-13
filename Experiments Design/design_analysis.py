@@ -1,5 +1,5 @@
 """
-Created on #DATA
+Created on 2016/4/12
 @author: Yida Yin
 """
 
@@ -63,6 +63,23 @@ def generate_design_matrix(design):
                 row[b+treatments[trt]] = 1
             design_matrix.append(row)
     return design_matrix
+
+
+def occurrence(design):
+    """
+    return the frequency of every treatment pairs which appear in the same block
+    """
+    pairs = []
+    pair_occurance = []
+    for blk in design:
+        for pair in itertools.combinations(blk, 2):
+            if set(pair) not in pairs:
+                pairs.append(set(pair))
+                pair_occurance.append(1)
+            else:
+                pair_occurance[pairs.index(set(pair))] += 1
+    return {tuple(key): value for key, value in zip(pairs, pair_occurance)}
+
 
 
 if __name__ == "__main__":
@@ -160,3 +177,9 @@ if __name__ == "__main__":
     b = np.matrix(b)
     print np.linalg.det(np.dot(a.T,a))
     print np.linalg.det(np.dot(b.T,b))
+
+    print occurrence(design)
+
+    design2 = [['A', 'C', 'D', 'E'],
+              ['D', 'E', 'F', 'F']]
+    print occurrence(design2)
