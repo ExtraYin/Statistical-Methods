@@ -7,7 +7,7 @@ import numpy as np
 import itertools
 
 
-def calc_var_diff_bet_pair(design_matrix):
+def calc_var_diff_bet_pair(design_matrix, blk_num = 0):
     """
     return the variance/sigma^2 of difference of every two treatments given a known design matrix
     """
@@ -20,7 +20,7 @@ def calc_var_diff_bet_pair(design_matrix):
     # note that xxi is a square matrix
     n = xxi.shape[0]
     var = {}
-    for pair in itertools.combinations(range(n), 2):  # ALREADY FIXED: the last treatment is not in the \beta vector
+    for pair in itertools.combinations(range(blk_num, n) if blk_num else range(n), 2):
         # generate pairwise contrast
         contrast = [0 for i in range(n)]
         contrast[pair[0]], contrast[pair[1]] = 1, -1
@@ -28,22 +28,29 @@ def calc_var_diff_bet_pair(design_matrix):
         # calculate A'(X'X)^(-1)A
         v = reduce(np.dot, [contrast.T, xxi, contrast])
         v = round(v, 3)
+        if blk_num:
+            # rename pair
+            pair = tuple(map(lambda x, y: x - y + 1, list(pair), [blk_num] * 2))
         if v in var.keys():
             var[v].append(pair)
         else:
             var[v] = [pair]
     # compare with the least treatment
-    for trt_1 in range(n):
+    for trt_1 in range(blk_num, n) if blk_num else range(n):
         contrast = [0 for i in range(n)]
         contrast[trt_1] = 1
         contrast = np.array(contrast)
         # calculate A'(X'X)^(-1)A
         v = reduce(np.dot, [contrast.T, xxi, contrast])
         v = round(v, 3)
+        pair = tuple([trt_1, n])
+        if blk_num:
+            # rename pair
+            pair = tuple(map(lambda x, y: x - y + 1, list(pair), [blk_num] * 2))
         if v in var.keys():
-            var[v].append(tuple([trt_1, n]))
+            var[v].append(pair)
         else:
-            var[v] = [tuple([trt_1, n])]
+            var[v] = [pair]
     return var
 
 
@@ -99,15 +106,21 @@ def occurrence(design):
     return the frequency of every treatment pairs which appear in the same block
     """
     pairs = []
-    pair_occurance = []
+    pair_occurrence = []
     for blk in design:
         for pair in itertools.combinations(blk, 2):
             if set(pair) not in pairs:
                 pairs.append(set(pair))
-                pair_occurance.append(1)
+                pair_occurrence.append(1)
             else:
-                pair_occurance[pairs.index(set(pair))] += 1
-    return {tuple(key): value for key, value in zip(pairs, pair_occurance)}
+                pair_occurrence[pairs.index(set(pair))] += 1
+    occ = {}
+    for i, occur in enumerate(pair_occurrence):
+        if occur in occ.keys():  # type(item) = int
+            occ[occur].append(pairs[i])
+        else:
+            occ[occur] = [pairs[i]]
+    return occ
 
 
 if __name__ == "__main__":
@@ -116,7 +129,7 @@ if __name__ == "__main__":
                 ['O', 'A', 'C'],
                 ['O', 'B', 'C']]
     print occurrence(design75)
-    print calc_var_diff_bet_pair(generate_design_matrix(design75))
+    print calc_var_diff_bet_pair(generate_design_matrix(design75), blk_num=4)
     print '-' * 80
 
     design77a = [['B', 'C', 'E', 'F'],
@@ -129,7 +142,7 @@ if __name__ == "__main__":
                  ['A', 'B', 'D', 'E'],
                  ['A', 'B', 'C', 'F']]
     print occurrence(design77a)
-    print calc_var_diff_bet_pair(generate_design_matrix(design77a))
+    print calc_var_diff_bet_pair(generate_design_matrix(design77a), blk_num=9)
     print '-' * 80
 
     design77b = [['A', 'B', 'D', 'F'],
@@ -143,7 +156,7 @@ if __name__ == "__main__":
                  ['A', 'C', 'D', 'F'],
                  ['A', 'B', 'C', 'E']]
     print occurrence(design77b)
-    print calc_var_diff_bet_pair(generate_design_matrix(design77b))
+    print calc_var_diff_bet_pair(generate_design_matrix(design77b), blk_num=10)
     print '-' * 80
 
     design78 = [['A', 'B', 'C'],
@@ -152,7 +165,7 @@ if __name__ == "__main__":
                 ['B', 'D', 'E'],
                 ['C', 'D', 'E'], ]
     print occurrence(design78)
-    print calc_var_diff_bet_pair(generate_design_matrix(design78))
+    print calc_var_diff_bet_pair(generate_design_matrix(design78), blk_num=5)
 
 
 
