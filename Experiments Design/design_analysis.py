@@ -7,7 +7,7 @@ import numpy as np
 import itertools
 
 
-def calc_var_diff_bet_pair(design_matrix, blk_num = 0):
+def calc_var_diff_bet_pair(design_matrix, blk_num=0, digits=3):
     """
     return the variance/sigma^2 of difference of every two treatments given a known design matrix
     """
@@ -27,7 +27,7 @@ def calc_var_diff_bet_pair(design_matrix, blk_num = 0):
         contrast = np.array(contrast)
         # calculate A'(X'X)^(-1)A
         v = reduce(np.dot, [contrast.T, xxi, contrast])
-        v = round(v, 3)
+        v = round(v, digits)
         if blk_num:
             # rename pair
             pair = tuple(map(lambda x, y: x - y + 1, list(pair), [blk_num] * 2))
@@ -42,7 +42,7 @@ def calc_var_diff_bet_pair(design_matrix, blk_num = 0):
         contrast = np.array(contrast)
         # calculate A'(X'X)^(-1)A
         v = reduce(np.dot, [contrast.T, xxi, contrast])
-        v = round(v, 3)
+        v = round(v, digits)
         pair = tuple([trt_1, n])
         if blk_num:
             # rename pair
@@ -142,17 +142,17 @@ if __name__ == "__main__":
                  ['A', 'B', 'D', 'E'],
                  ['A', 'B', 'C', 'F']]
     print occurrence(design77a)
-    print calc_var_diff_bet_pair(generate_design_matrix(design77a), blk_num=9)
+    print calc_var_diff_bet_pair(generate_design_matrix(design77a), blk_num=9, digits=5)
     print '-' * 80
 
     design77b = [['A', 'B', 'D', 'F'],
-                 ['A', 'B', 'E', 'F'],
-                 ['A', 'D', 'E', 'F'],
                  ['A', 'B', 'D', 'E'],
+                 ['A', 'B', 'E', 'F'],
                  ['A', 'B', 'C', 'D'],
+                 ['A', 'D', 'E', 'F'],
                  ['A', 'C', 'D', 'E'],
                  ['A', 'C', 'E', 'F'],
-                 ['A', 'B', 'C', 'E'],
+                 ['A', 'B', 'C', 'F'],
                  ['A', 'C', 'D', 'F'],
                  ['A', 'B', 'C', 'E']]
     print occurrence(design77b)
@@ -166,6 +166,21 @@ if __name__ == "__main__":
                 ['C', 'D', 'E'], ]
     print occurrence(design78)
     print calc_var_diff_bet_pair(generate_design_matrix(design78), blk_num=5)
+    print '-' * 80
 
-
+    # Notice that this result is really interesting compared with design77a
+    # You cannot just throw away the control group and use the formula to calculate
+    # the variance of a Balanced Incomplete Block Design
+    design = [['B', 'D', 'F'],
+              ['B', 'D', 'E'],
+              ['B', 'E', 'F'],
+              ['B', 'C', 'D'],
+              ['D', 'E', 'F'],
+              ['C', 'D', 'E'],
+              ['C', 'E', 'F'],
+              ['B', 'C', 'F'],
+              ['C', 'D', 'F'],
+              ['B', 'C', 'E']]
+    print occurrence(design)
+    print calc_var_diff_bet_pair(generate_design_matrix(design), blk_num=10)
 
