@@ -20,7 +20,7 @@ def calc_var_diff_bet_pair(design_matrix):
     # note that xxi is a square matrix
     n = xxi.shape[0]
     var = {}
-    for pair in itertools.combinations(range(n), 2):  # TODO: the last treatment is not in the \beta vector
+    for pair in itertools.combinations(range(n), 2):  # ALREADY FIXED: the last treatment is not in the \beta vector
         # generate pairwise contrast
         contrast = [0 for i in range(n)]
         contrast[pair[0]], contrast[pair[1]] = 1, -1
@@ -32,7 +32,36 @@ def calc_var_diff_bet_pair(design_matrix):
             var[v].append(pair)
         else:
             var[v] = [pair]
+    # compare with the least treatment
+    for trt_1 in range(n):
+        contrast = [0 for i in range(n)]
+        contrast[trt_1] = 1
+        contrast = np.array(contrast)
+        # calculate A'(X'X)^(-1)A
+        v = reduce(np.dot, [contrast.T, xxi, contrast])
+        v = round(v, 3)
+        if v in var.keys():
+            var[v].append(tuple([trt_1, n]))
+        else:
+            var[v] = [tuple([trt_1, n])]
     return var
+
+
+def calc_trt_eff(design_matrix):
+    """
+    calculate treatment effects
+    return (X'X)^{-1}X'Y     but we don't know Y
+    """
+    pass
+
+
+def control_first(t):
+    """
+    usually 'O' stands for 'control group'
+    """
+    if t == 'O':
+        return '0'
+    return t
 
 
 def generate_design_matrix(design):
@@ -42,7 +71,7 @@ def generate_design_matrix(design):
     :param design:  A list of list, each sub-list stands for a block, each element in the sub-list is a treatment
     :return:  A design matrix
     """
-    assert(isinstance(design[0], list))
+    assert (isinstance(design[0], list))
     b = len(design)
     # count total treatment numbers and add their index to the dictionary
     treatments = set()
@@ -51,18 +80,18 @@ def generate_design_matrix(design):
             treatments.add(trt)
     n = len(treatments)
     treatments = list(treatments)
-    treatments.sort()
-    treatments = {trt:i for i,trt in enumerate(treatments)}
+    treatments.sort(key=control_first)
+    treatments = {trt: i for i, trt in enumerate(treatments)}
     # create matrix
     design_matrix = []
     for bi, blk in enumerate(design):
         for trt in blk:
-            row = [0 for i in range(b+n-1)]
+            row = [0 for i in range(b + n - 1)]
             row[bi] = 1
-            if treatments[trt] != n-1:
-                row[b+treatments[trt]] = 1
+            if treatments[trt] != n - 1:
+                row[b + treatments[trt]] = 1
             design_matrix.append(row)
-    return design_matrix
+    return np.array(design_matrix)
 
 
 def occurrence(design):
@@ -81,105 +110,49 @@ def occurrence(design):
     return {tuple(key): value for key, value in zip(pairs, pair_occurance)}
 
 
-
 if __name__ == "__main__":
-    a = np.array([[1,0,0,0,0,0,0,0,0,0,0,0,0,0,   0,1,0,0,0,0],
-                 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,   0,0,1,0,0,0],
-                 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,   0,0,0,0,0,1],
-                 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,   0,0,0,0,0,0],
+    design75 = [['O', 'A', 'B', 'C'],
+                ['O', 'A', 'B'],
+                ['O', 'A', 'C'],
+                ['O', 'B', 'C']]
+    print occurrence(design75)
+    print calc_var_diff_bet_pair(generate_design_matrix(design75))
+    print '-' * 80
 
-                 [0,1,0,0,0,0,0,0,0,0,0,0,0,0,   0,0,0,1,0,0],
-                 [0,1,0,0,0,0,0,0,0,0,0,0,0,0,   0,0,0,0,1,0],
-                 [0,1,0,0,0,0,0,0,0,0,0,0,0,0,   0,0,0,0,0,1],
-                 [0,1,0,0,0,0,0,0,0,0,0,0,0,0,   0,0,0,0,0,0],
+    design77a = [['B', 'C', 'E', 'F'],
+                 ['A', 'D', 'E', 'F'],
+                 ['A', 'C', 'D', 'E'],
+                 ['A', 'C', 'D', 'F'],
+                 ['B', 'C', 'D', 'F'],
+                 ['B', 'C', 'D', 'E'],
+                 ['A', 'B', 'E', 'F'],
+                 ['A', 'B', 'D', 'E'],
+                 ['A', 'B', 'C', 'F']]
+    print occurrence(design77a)
+    print calc_var_diff_bet_pair(generate_design_matrix(design77a))
+    print '-' * 80
 
-                 [0,0,1,0,0,0,0,0,0,0,0,0,0,0,   0,0,0,1,0,0],
-                 [0,0,1,0,0,0,0,0,0,0,0,0,0,0,   0,0,0,0,1,0],
-                 [0,0,1,0,0,0,0,0,0,0,0,0,0,0,   0,0,0,0,0,1],
-                 [0,0,1,0,0,0,0,0,0,0,0,0,0,0,   0,0,0,0,0,0],
+    design77b = [['A', 'B', 'D', 'F'],
+                 ['A', 'B', 'E', 'F'],
+                 ['A', 'D', 'E', 'F'],
+                 ['A', 'B', 'D', 'E'],
+                 ['A', 'B', 'C', 'D'],
+                 ['A', 'C', 'D', 'E'],
+                 ['A', 'C', 'E', 'F'],
+                 ['A', 'B', 'C', 'E'],
+                 ['A', 'C', 'D', 'F'],
+                 ['A', 'B', 'C', 'E']]
+    print occurrence(design77b)
+    print calc_var_diff_bet_pair(generate_design_matrix(design77b))
+    print '-' * 80
 
-                 [0,0,0,1,0,0,0,0,0,0,0,0,0,0,   1,0,0,0,0,0],
-                 [0,0,0,1,0,0,0,0,0,0,0,0,0,0,   0,0,1,0,0,0],
-                 [0,0,0,1,0,0,0,0,0,0,0,0,0,0,   0,0,0,1,0,0],
-                 [0,0,0,1,0,0,0,0,0,0,0,0,0,0,   0,0,0,0,1,0],
-
-                 [0,0,0,0,1,0,0,0,0,0,0,0,0,0,   1,0,0,0,0,0],
-                 [0,0,0,0,1,0,0,0,0,0,0,0,0,0,   0,0,1,0,0,0],
-                 [0,0,0,0,1,0,0,0,0,0,0,0,0,0,   0,0,0,1,0,0],
-                 [0,0,0,0,1,0,0,0,0,0,0,0,0,0,   0,0,0,0,0,0],
-
-                 [0,0,0,0,0,1,0,0,0,0,0,0,0,0,   1,0,0,0,0,0],
-                 [0,0,0,0,0,1,0,0,0,0,0,0,0,0,   0,0,1,0,0,0],
-                 [0,0,0,0,0,1,0,0,0,0,0,0,0,0,   0,0,0,0,0,1],
-                 [0,0,0,0,0,1,0,0,0,0,0,0,0,0,   0,0,0,0,0,0],
-
-                 [0,0,0,0,0,0,1,0,0,0,0,0,0,0,   1,0,0,0,0,0],
-                 [0,0,0,0,0,0,1,0,0,0,0,0,0,0,   0,0,1,0,0,0],
-                 [0,0,0,0,0,0,1,0,0,0,0,0,0,0,   0,0,0,0,1,0],
-                 [0,0,0,0,0,0,1,0,0,0,0,0,0,0,   0,0,0,0,0,1],
-
-                 [0,0,0,0,0,0,0,1,0,0,0,0,0,0,   0,1,0,0,0,0],
-                 [0,0,0,0,0,0,0,1,0,0,0,0,0,0,   0,0,1,0,0,0],
-                 [0,0,0,0,0,0,0,1,0,0,0,0,0,0,   0,0,0,0,1,0],
-                 [0,0,0,0,0,0,0,1,0,0,0,0,0,0,   0,0,0,0,0,1],
-
-                 [0,0,0,0,0,0,0,0,1,0,0,0,0,0,   0,1,0,0,0,0],
-                 [0,0,0,0,0,0,0,0,1,0,0,0,0,0,   0,0,1,0,0,0],
-                 [0,0,0,0,0,0,0,0,1,0,0,0,0,0,   0,0,0,1,0,0],
-                 [0,0,0,0,0,0,0,0,1,0,0,0,0,0,   0,0,0,0,0,0],
-
-                 [0,0,0,0,0,0,0,0,0,1,0,0,0,0,   1,0,0,0,0,0],
-                 [0,0,0,0,0,0,0,0,0,1,0,0,0,0,   0,1,0,0,0,0],
-                 [0,0,0,0,0,0,0,0,0,1,0,0,0,0,   0,0,0,0,1,0],
-                 [0,0,0,0,0,0,0,0,0,1,0,0,0,0,   0,0,0,0,0,0],
-
-                 [0,0,0,0,0,0,0,0,0,0,1,0,0,0,   1,0,0,0,0,0],
-                 [0,0,0,0,0,0,0,0,0,0,1,0,0,0,   0,1,0,0,0,0],
-                 [0,0,0,0,0,0,0,0,0,0,1,0,0,0,   0,0,0,0,1,0],
-                 [0,0,0,0,0,0,0,0,0,0,1,0,0,0,   0,0,0,0,0,0],
-
-                 [0,0,0,0,0,0,0,0,0,0,0,1,0,0,   1,0,0,0,0,0],
-                 [0,0,0,0,0,0,0,0,0,0,0,1,0,0,   0,1,0,0,0,0],
-                 [0,0,0,0,0,0,0,0,0,0,0,1,0,0,   0,0,0,1,0,0],
-                 [0,0,0,0,0,0,0,0,0,0,0,1,0,0,   0,0,0,0,0,1],
-
-                 [0,0,0,0,0,0,0,0,0,0,0,0,1,0,   1,0,0,0,0,0],
-                 [0,0,0,0,0,0,0,0,0,0,0,0,1,0,   0,1,0,0,0,0],
-                 [0,0,0,0,0,0,0,0,0,0,0,0,1,0,   0,0,0,1,0,0],
-                 [0,0,0,0,0,0,0,0,0,0,0,0,1,0,   0,0,0,0,0,1],
-
-                 [0,0,0,0,0,0,0,0,0,0,0,0,0,1,   0,1,0,0,0,0],
-                 [0,0,0,0,0,0,0,0,0,0,0,0,0,1,   0,0,1,0,0,0],
-                 [0,0,0,0,0,0,0,0,0,0,0,0,0,1,   0,0,0,1,0,0],
-                 [0,0,0,0,0,0,0,0,0,0,0,0,0,1,   0,0,0,0,1,0]])
-
-    vd = calc_var_diff_bet_pair(a)
-    for key in vd:
-        print key, vd[key]
+    design78 = [['A', 'B', 'C'],
+                ['A', 'B', 'C'],
+                ['A', 'D', 'E'],
+                ['B', 'D', 'E'],
+                ['C', 'D', 'E'], ]
+    print occurrence(design78)
+    print calc_var_diff_bet_pair(generate_design_matrix(design78))
 
 
-    design = [['A', 'C', 'D', 'E'],
-              ['A', 'C', 'D', 'E'],
-              ['D', 'E', 'F', 'G'],
-              ['D', 'E', 'F', 'G'],
-              ['A', 'C', 'F', 'G'],
-              ['A', 'C', 'F', 'G'],
-              ['B', 'C', 'E', 'F'],
-              ['B', 'C', 'E', 'G'],
-              ['A', 'B', 'E', 'G'],
-              ['B', 'C', 'D', 'G'],
-              ['A', 'B', 'E', 'F'],
-              ['A', 'B', 'D', 'G'],
-              ['A', 'B', 'D', 'F'],
-              ['B', 'C', 'D', 'F']]
 
-    b = generate_design_matrix(design)
-    b = np.matrix(b)
-    print np.linalg.det(np.dot(a.T,a))
-    print np.linalg.det(np.dot(b.T,b))
-
-    print occurrence(design)
-
-    design2 = [['A', 'C', 'D', 'E'],
-              ['D', 'E', 'F', 'F']]
-    print occurrence(design2)
