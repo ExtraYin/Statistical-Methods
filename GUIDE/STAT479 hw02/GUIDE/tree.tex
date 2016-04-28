@@ -1,0 +1,68 @@
+ \documentclass{article}
+ %File creation date: 12/07/15  at 23:00
+ \usepackage{pstricks,pst-node,pst-tree}
+ \usepackage[left=0.5in,right=0.5in,top=1in,bottom=1in]{geometry}
+ \usepackage{lscape}
+ \pagestyle{empty}
+ \begin{document}
+ \begin{landscape}
+ \begin{center}
+\psset{linecolor=black,tnsep=1pt,tndepth=0cm,tnheight=0cm,treesep=.3cm,levelsep=50pt,radius=7pt}
+%     \def\psedge#1#2{\ncangle{#2}{#1}}
+  \pstree[treemode=D]{\Tcircle{ 1 }~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{STNAM}}\\in $S_{1}$}}}{
+  \pstree[treemode=D]{\Tcircle{ 2 }~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{STNAM}}\\in $S_{2}$}}}{
+  \pstree[treemode=D]{\Tcircle{ 4 }~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{STNAM}}\\in $S_{3}$}}}{
+    \Tcircle[fillcolor=yellow,fillstyle=solid]{ 8 }~{\shortstack[c]{625\\72.54}}
+  \pstree[treemode=D]{\Tcircle{ 9 }~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{MHI_COHORT_1112}}\\$\leq_*$84.74}}}{
+  \pstree[treemode=D]{\Tcircle{\small 18}~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{No_Plumb_ACS_08_12}}\\$\leq$   0.0000    }}}{
+    \Tcircle[fillcolor=yellow,fillstyle=solid]{\small 36}~{\shortstack[c]{108\\82.14}}
+  \pstree[treemode=D]{\Tcircle{\small 37}~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{CWD_COHORT_1112}}\\$\leq_*$21.88}}}{
+  \pstree[treemode=D]{\Tcircle{\small 74}~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{ALL_COHORT_1112}}\\$\leq$46.00}}}{
+    \Tcircle[fillcolor=yellow,fillstyle=solid]{\tiny 148}~{\shortstack[c]{133\\71.21}}
+    \Tcircle[fillcolor=yellow,fillstyle=solid]{\tiny 149}~{\shortstack[c]{187\\81.54}}
+   }
+    \Tcircle[fillcolor=yellow,fillstyle=solid]{\small 75}~{\shortstack[c]{128\\77.18}}
+   }
+   }
+    \Tcircle[fillcolor=yellow,fillstyle=solid]{\small 19}~{\shortstack[c]{309\\71.08}}
+   }
+   }
+  \pstree[treemode=D]{\Tcircle{ 5 }~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{ECD_COHORT_1112}}\\$\leq_*$101.86}}}{
+  \pstree[treemode=D]{\Tcircle{\small 10}~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{ECD_COHORT_1112}}\\$\leq$3.00}}}{
+    \Tcircle[fillcolor=yellow,fillstyle=solid]{\small 20}~{\shortstack[c]{99\\68.65}}
+  \pstree[treemode=D]{\Tcircle{\small 21}~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{ECD_COHORT_1112}}\\$\leq$4.00}}}{
+    \Tcircle[fillcolor=yellow,fillstyle=solid]{\small 42}~{\shortstack[c]{71\\68.39}}
+    \Tcircle[fillcolor=yellow,fillstyle=solid]{\small 43}~{\shortstack[c]{2359\\82.97}}
+   }
+   }
+    \Tcircle[fillcolor=yellow,fillstyle=solid]{\small 11}~{\shortstack[c]{744\\78.53}}
+   }
+   }
+  \pstree[treemode=D]{\Tcircle{ 3 }~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{ECD_COHORT_1112}}\\$\leq_*$148.86}}}{
+  \pstree[treemode=D]{\Tcircle{ 6 }~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{ALL_COHORT_1112}}\\$\leq$67.00}}}{
+    \Tcircle[fillcolor=yellow,fillstyle=solid]{\small 12}~{\shortstack[c]{1445\\81.11}}
+    \Tcircle[fillcolor=yellow,fillstyle=solid]{\small 13}~{\shortstack[c]{2740\\90.47}}
+   }
+    \Tcircle[fillcolor=yellow,fillstyle=solid]{ 7 }~{\shortstack[c]{837\\84.66}}
+ }
+ }
+ \end{center}
+GUIDE  0.50-SE piecewise linear least-squares regression tree with stepwise variable selection
+for predicting \texttt{\detokenize{ALL_RATE_1112}}.
+At each split, an observation goes to the left branch 
+ if and only if the condition is satisfied.
+ The symbol `$\leq_*$' stands for `$\leq$ or missing'.
+Set $S_{1}$ = \{ALABAMA, ALASKA, ARIZONA, COLORADO, DELAWARE,
+ DISTRICT OF COLUMBIA, FLORIDA, GEORGIA, HAWAII, ILLINOIS, KANSAS, LOUISIANA,
+ MAINE, MICHIGAN, MINNESOTA, MISSISSIPPI, MONTANA, NEBRASKA, NEVADA,
+ NEW MEXICO, NEW YORK, NORTH CAROLINA, NORTH DAKOTA, OREGON, RHODE ISLAND,
+ SOUTH CAROLINA, SOUTH DAKOTA, UTAH, VIRGINIA, WASHINGTON, WEST VIRGINIA,
+ WYOMING\}.
+Set $S_{2}$ = \{ALABAMA, ALASKA, ARIZONA, COLORADO, DELAWARE,
+ DISTRICT OF COLUMBIA, FLORIDA, GEORGIA, LOUISIANA, MISSISSIPPI, MONTANA,
+ NEVADA, NEW MEXICO, SOUTH CAROLINA, WASHINGTON\}.
+Set $S_{3}$ = \{ALASKA, DELAWARE, DISTRICT OF COLUMBIA, FLORIDA, GEORGIA,
+ LOUISIANA, MISSISSIPPI, NEVADA, NEW MEXICO\}.
+Sample sizes and means of \texttt{\detokenize{ALL_RATE_1112}} are printed below nodes.
+ \end{landscape}
+ \end{document}

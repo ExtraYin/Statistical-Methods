@@ -1,0 +1,530 @@
+---
+title: "Data for Diplomas"
+author: "Yida Yin"
+output:
+  pdf_document:
+    fig_caption: yes
+    keep_tex: yes
+  html_document:
+    theme: cerulean
+  word_document: default
+---
+
+#Introduction
+
+The 2015 'Data for Diplomas' run by AT&T provides a rich dataset with detailed information of high school graduation rates between races. The goal of this competation is trying to help increase U.S. high school graduation rates to 90% by the year 2020.
+
+Do people of different races have different performance? Does financial condition of the family have an effect on the graduation rate? And finally trying to discover how to increase the high school graduation rate?  
+
+To answer these questions, I used GUIDE to choose some important variables and visualize them to see if any patterns emerge. After that I constructed a tree model to find out how these factors will affect the graduation rate and then I attempted to explain the model. In this report, I'm not trying to fit a model and give a prediction to the graduation rate. Instead, I want to find out what are the important factors which will affect the graduation rate.
+
+
+
+```{r, message = F, echo = F}
+##Setup the Bench
+library(ggplot2)
+library(mapproj)
+library(VIM)
+```
+
+```{r, echo = F, message = F}
+rm(list = ls())
+#setwd()
+data = read.csv("GRADUATION_WITH_CENSUS.csv")
+```
+
+##Data Manipulation  
+
+First, we need to manipulate the data to make it easier to deal with. The five things I have done are listed below: 
+
+####  1.Convert empty string to NA      
+Since there are many empty strings in the data, the first thing we need to do is to change them into NA. 
+
+#### 2.Cut those variables represant 'rates' into levels  
+Then I noticed that those "rates" are displayed in percentile levels (string), so I wrote a function that returns the number (numeric) corresponding to percentile levels. For example, if the original rates is "55-59" then I choose 57 as its new value. 
+
+#### 3.Remove dollar signs    
+After that, I removed the dollar signs ($) and commas (which represent thousands and millions)   
+
+#### 4.Delete colunms which have too many levels   
+Variables with too many levels may cause problems in building the model. They usually contribute little to the analysis. So I deleted "leanm11" and "School.District" which are used to identify the location of education agencies in district scale.   
+
+#### 5.Delete duplicated columns 
+There are some columns which represant the same thing, but many have different column names. For example STNAM & State_name are both "State Names" and County & County.1 & County.name are all "County names". For these columns, I only kept one of them and then delete all of the others.   
+
+```{r,echo = F, message=F}
+# convert "" to NA------------------------------------------------------
+for(i in 1:ncol(data)){
+  data[[i]][which(data[[i]] == "") ] = NA
+}
+# "level" to number--------------------------------------------------------
+ltn = function(x){
+  m = list("PS"=5,"GE50"=55,"GE80"=85,"GE90"=95,"LE5"=3,"LE20"=15,"LT50"=45,"LE10"=5,"GE95"=97,
+           "GE99" = 99,"0-4"=2,"5-9"=7,"10-14"=12,"15-19"=17,"20-24"=22,"25-29"=27,"30-34"=32,
+           "35-39"=37,"40-44"=42,"45-49"=47,"50-54"=52,"55-59"=57,"60-64"=62,"65-69"=67,"70-74"=72,
+           "75-79"=77,"80-84"=82,"85-89"=87,"90-94"=92,"95-99"=97)
+  v = numeric(0)
+  for(i in 1:length(x)){
+    if(is.na(x[i])){
+      v = c(v,NA)
+    }else if (x[i] %in% names(m)){
+      v = c(v, m[[as.character(x[i])]])
+    }else{
+      v = c(v, as.numeric(x[i]))
+    }
+  }
+  return(v)
+}
+
+# delete leanm11, leaid11 & School.District
+data = data[ , -which(names(data)=="School.District")]
+data = data[ , -which(names(data)=="leanm11")]
+data = data[ , -which(names(data)=="leaid11")]
+data = data[ , -which(names(data)=="State_name")]
+data = data[ , -which(names(data)=="County")]
+data = data[ , -which(names(data)=="County.1")]
+data = data[ , -which(names(data)=="X")]
+
+
+data$MAM_RATE_1112 = ltn(data[["MAM_RATE_1112"]])
+data$MTR_RATE_1112 = ltn(data[["MTR_RATE_1112"]])
+data$MAS_RATE_1112 = ltn(data[["MAS_RATE_1112"]])
+data$MBL_RATE_1112 = ltn(data[["MBL_RATE_1112"]])
+data$MHI_RATE_1112 = ltn(data[["MHI_RATE_1112"]])
+data$MWH_RATE_1112 = ltn(data[["MWH_RATE_1112"]])
+data$CWD_RATE_1112 = ltn(data[["CWD_RATE_1112"]])
+data$ECD_RATE_1112 = ltn(data[["ECD_RATE_1112"]])
+
+
+
+# get rid of $---------------------------------------------------------
+mtn = function(x){
+  v = numeric(0)
+  for(i in 1:length(x)){
+    if(is.na(x[i])){
+      v = c(v,NA)
+    }else{
+      n = sub("\\$(.*)","\\1",as.character(x[i]))
+      n = sub("(.*),(.*)","\\1\\2",n)
+      n = sub("(.*),(.*)","\\1\\2",n)
+      n = sub("(.*),(.*)","\\1\\2",n)
+      v = c(v,as.numeric(n))
+    }
+  }
+  return(v)
+}
+
+
+
+data[["Med_HHD_Inc_ACS_08_12"]] = mtn(data[["Med_HHD_Inc_ACS_08_12"]])
+data[["Med_HHD_Inc_ACSMOE_08_12"]] = mtn(data[["Med_HHD_Inc_ACSMOE_08_12"]])
+data[["Med_House_value_ACS_08_12"]] = mtn(data[["Med_House_value_ACS_08_12"]])
+data[["Med_House_value_ACSMOE_08_12"]] = mtn(data[["Med_House_value_ACSMOE_08_12"]])
+data[["Aggregate_HH_INC_ACS_08_12"]] = mtn(data[["Aggregate_HH_INC_ACS_08_12"]])
+data[["Aggr_House_Value_ACS_08_12"]] = mtn(data[["Aggr_House_Value_ACS_08_12"]])
+data[["Aggregate_HH_INC_ACSMOE_08_12"]] = mtn(data[["Aggregate_HH_INC_ACSMOE_08_12"]])
+data[["Aggr_House_Value_ACSMOE_08_12"]] = mtn(data[["Aggr_House_Value_ACSMOE_08_12"]])
+```
+
+
+##Catch a Glimpse of the Data
+
+### Missing Values
+
+Let's take a glance at the missing values in the first file (graduation rates). As we can see, there are more than half values missing in "MAM_RATE_1112" and "MTR_RATE_1112". So let's exclude them from the dataset.  
+
+```{r, echo = F, comment=""}
+aggr(data[,seq(1,26,2)],plot = FALSE)
+```
+
+### How many are they?  
+
+Here I wanted to see and compare the number of Asian, Black, Hispanic, White students. I also wanted to see the number of disabled and economically disadvantaged students.   
+
+```{r, echo = F}
+sn = c(sum(data$MAS_COHORT_1112[which(!is.na(data$MAS_COHORT_1112))]),sum(data$MBL_COHORT_1112[which(!is.na(data$MBL_COHORT_1112))]),
+       sum(data$MHI_COHORT_1112[which(!is.na(data$MHI_COHORT_1112))]),sum(data$MWH_COHORT_1112[which(!is.na(data$MWH_COHORT_1112))]),
+       sum(data$CWD_COHORT_1112[which(!is.na(data$CWD_COHORT_1112))]),sum(data$ECD_COHORT_1112[which(!is.na(data$ECD_COHORT_1112))])
+      )
+sndata = data.frame('value' = sn, 'class' = c("MAS","MBL","MHI","MWH","CWD","ECD"))
+```
+
+```{r,echo = FALSE, message=FALSE}
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+```
+
+```{r, echo = FALSE,fig.width = 10}
+p1 <- ggplot(sndata[1:4,], aes(x= class , y=value, fill= class)) +                        
+           geom_bar(stat="identity") + scale_fill_hue(l=80) +
+           ylab("Number of Students") +
+           ggtitle("Number of Students \n Belonging to Different Races")+
+           theme(axis.text.x = element_text(angle = 30, hjust = 1),
+           panel.background = element_rect(fill = 'white' ))
+p2 <- ggplot(sndata[5:6,], aes(x= class , y=value, fill= class)) +                        
+           geom_bar(stat="identity") + scale_fill_hue(l=80) +
+           ylab("Number of Students") +
+           ggtitle("Number of Disabled or Economically \n Disadvantaged Students")+
+           theme(axis.text.x = element_text(angle = 30, hjust = 1),
+           panel.background = element_rect(fill = 'white' ))
+multiplot(p1, p2, cols = 2)
+```
+
+MAS:Asian/Pacific Islander students;  MBL:Black students;  MHI:Hispanic students;  MWH:White students;  CWD:children with disabilities;  ECD:economically disadvantaged students;
+
+## Build the Model  
+Next, I began building the model and took "ALL_ RATE_1112" as my response variable. The main algorithm I used is the GUIDE algorithm. Before I began building the model, I first did some variable selection.   
+
+## Lesso For Variable Selection
+
+Our dataset contains nearly 600 variables which is a heavy burden even for GUIDE. So before I ran GUIDE, I decided to reduce the dimension of the dataset, i.e. to select some important variables. The method I used for selection is named Lasso.   
+
+Since Lasso can only handle the numeric variables, I had to exclude all those "Categorical variables" in my model. Luckily, there are only two "Categorical variables": County_name and STNAM(State name). I deleted them and then run Lasso.  
+
+```{r, echo = F, message=F}
+replaceWithColMean<-function(mydata){
+  for(i in 1:ncol(mydata)){
+    if(is.numeric(mydata[ , i]) == TRUE){
+      mydata[is.na(mydata[,i]), i] <- mean(mydata[,i], na.rm = TRUE)
+    }else{
+      lvs<-levels(mydata[ , i])
+      nums<-sapply(lvs,function(x){length(which(mydata[ , i]==x))})
+      chs<-lvs[which.max(nums)]
+      l<-which(is.na(mydata[ , i]))
+      if(length(l)>0){
+        mydata[ , i][l]<-chs
+      }      
+    }
+  }
+  return(mydata)
+}
+data2 = replaceWithColMean(data)
+
+f = numeric(0)
+for(i in 1:length(data2[1,])){
+  if(class(data[1,i]) == "factor"){
+    f = c(f,i)
+  }
+}
+```
+
+```{r, echo = FALSE, message = F}
+
+library(glmnet)
+train.x <- as.matrix(data2[, -c(f, which(names(data)=="ALL_RATE_1112"))   ])
+train.y <- as.matrix(data2[,which(names(data)=="ALL_RATE_1112")])
+
+# Use lasso to do the variable selection
+#lasso = cv.glmnet(x = train.x, y = train.y)
+
+#plot(lasso)
+# lasso.final <- lasso$glmnet.fit
+# lasso.coef <- coef(lasso$glmnet.fit, s = lasso$lambda.1se)
+# row.names(lasso.coef)[which(lasso.coef > 0)]
+ 
+lasso2 = glmnet(x = train.x, y = train.y, lambda = 0.04120968) # lasso$lambda.min
+lasso.selected = row.names(lasso2$beta)[which(lasso2$beta != 0)]
+
+
+data3 = data2[ , c(lasso.selected,"County_name","STNAM","ALL_RATE_1112")]
+```
+
+I chose the lambda based on the Mean Squared Error using cross validation. The model which has the smallest mean squared error contains about 150 variables.   
+
+
+## GUIDE TREE ALGORITHM
+
+Then I attempted to use GUIDE to construct a tree model. First I needed to create a 'Description file'. Please remember that we need to remove those 'rate' variables because it does not make sense to use 'The graduation rate of white students' to predict 'All graduation rate' since there is the possibility that 80% of the students in high school are white. The only data we can use to build the model is the census data.   
+
+```{r, echo = FALSE, mesage = FALSE}
+# Write to GUIDE
+write.guide = function(data, variable.name="ALL_RATE_1112",ignore.list = NULL, data.name = "diplomas.txt", desc.name = "desc.txt"){
+
+  write.table(data, data.name, col.names = FALSE, row.names = FALSE)
+
+  str = paste(data.name,"\nNA\ncolumn, varname, vartype\n", sep = "")
+  names = names(data)
+  for(i in 1:length(names)){
+    # target variable d
+    if(names[i] == variable.name){
+      str = paste(str, i, " \"", names[i], "\" d\n",sep = "")
+      next
+    }
+    # ignore x
+    if(names[i] %in% ignore.list){
+      str = paste(str, i, " \"", names[i], "\" x\n",sep = "")
+      next
+    }
+    # numeric n
+    if(class(data[[i]]) == "numeric"){
+      str = paste(str, i, " \"", names[i], "\" n\n",sep = "")
+      next
+    }
+    # factor c
+    if(class(data[[i]]) == "factor"){
+      str = paste(str, i, " \"", names[i], "\" c\n",sep = "")
+      next
+    }
+    # integer n
+    if(class(data[[i]]) == "integer"){
+      str = paste(str, i, " \"", names[i], "\" n\n",sep = "")
+      next
+    }
+    cat("ERROE! ",i," ", class(data[[i]]),"\n")
+  }
+  writeLines(str, desc.name)
+}
+
+ignore.list = c("MAM_RATE_1112","MAS_RATE_1112","MBL_RATE_1112","MHI_RATE_1112",
+                "MTR_RATE_1112","MWH_RATE_1112","CWD_RATE_1112","ECD_RATE_1112","Percentage")
+#write.guide(data3,"ALL_RATE_1112",ignore.list = ignore.list, "diplomas.txt","desc.txt")
+```
+
+## GUIDE RESULTS
+
+### GUIDE Importance Analysis   
+The GUIDE algorithm provides us a chance to see the importance rank of all variables. Some most important variables are listed below.   
+
+```{r, echo = F, comment="",fig.width = 10}
+imp.lev = read.table("./GUIDE_Lasso/score.txt", header= TRUE)
+imp.lev = imp.lev[imp.lev$Score > 1 ,c(2,3)]
+
+imp.p <- ggplot(imp.lev[1:15,], aes(x=reorder(Variable, Score), y=Score)) +
+     geom_bar(stat="identity", fill="#53cfff") +
+     geom_hline(yintercept = 10, col = "orange", lty = "dashed", cex = 1.02) +
+     coord_flip() + 
+     theme_light(base_size=20) +
+     xlab("") +
+     ylab("Importance") + 
+     ggtitle("GUIDE Regression Feature Importance\n") +
+  theme_light(base_size=15) +
+     theme(plot.title=element_text(size=18))
+imp.p
+```
+
+I checked the meaning of every variable in this table and find that they can be divided into groups. And then I took a further look at the data based on these groups.  
+
+1: The most important variable is "STNAM" which stands for the state name. Also "County_ name" and "LAND_ AREA" are variables which related to location. This gives us an intuitive feeling that the graduation rate may be largely affected by the location.   
+
+2: "Aggregate_ HH_ INC_ ACS" ,"pct_ Prs_ Blw_ Pov_ Lev_ " and "Med_ HHD_ Inc_ ACS_ 08_ 1" measure how rich the family is.  
+
+3: "NH_ White_ alone_ CEN_ 2" measures the number of white people.  
+
+
+
+#### Which states are these?  
+
+It seems that the state is the most important factor, so I am curious to know which states have the highest graduation rate. Thus, I drew a picture below.   
+
+```{r, echo = FALSE, message=FALSE}
+st = unique(data['STNAM'])
+st = st$STNAM
+
+# Idaho, Oklahoma, and Kentuchy are not in the dataset
+# ALASKA and HAWAII are not in the 'regions'
+st_index = which(st == 'HAWAII' | st == 'ALASKA')
+
+drawVariable = function(variable){
+  y = tapply(data[[variable]][-which(is.na(data[[variable]]))], INDEX = data$STNAM[-which(is.na(data[[variable]]))], FUN = mean)
+  drawdata = data.frame('region' = names(y), 'value' = y)
+  row.names(drawdata) = 1:48
+  drawdata[,1] = tolower(drawdata[,1])
+  return(drawdata)
+}
+
+drawmap = function(drawdata, title){
+  states <- data.frame(state.center, state.abb)
+  states <- states[!(states$state.abb %in% c("AK", "HI")),] # they aren't part of states_map
+  states_map <- map_data("state")
+
+  p1 <- ggplot()
+  # borders
+  p1 <- p1 + geom_map(data=states_map, map=states_map,
+                      aes(x=long, y=lat, map_id=region),
+                      color="white", size=0.15)
+  # fills
+  p1 <- p1 + geom_map(data=drawdata, map=states_map,
+                      aes(fill=value, map_id=region),
+                      color="white", size=0.15)
+  # labels
+  p1 <- p1 + geom_text(data=states, 
+                       aes(x=x, y=y, label=state.abb, group=NULL), size=3)
+  # decent projection
+  p1 <- p1 + coord_map("albers", lat0=39, lat1=45)
+  p1 <- p1 + scale_fill_gradient2(low="#f7f4f9", mid="#df65b0", high="#67001f")
+  # better theme
+  p1 <- p1 + labs(x=NULL, y=NULL)
+  p1 <- p1 + theme_bw()
+  p1 <- p1 + theme(panel.grid=element_blank())
+  p1 <- p1 + theme(panel.border=element_blank())
+  p1 <- p1 + theme(axis.ticks=element_blank())
+  p1 <- p1 + theme(axis.text=element_blank())
+  p1 <- p1 + scale_fill_distiller(palette = 'GnBu')
+  p1 <- p1 + ggtitle(paste(title,"in the US"))
+  p1
+}
+```
+
+```{r,echo = F, message = FALSE,warning=FALSE,fig.width = 10}
+drawmap(drawVariable("ALL_RATE_1112"),"All Graduation Rate")
+#drawmap(drawVariable("ECD_RATE_1112"),"Economically disadvantaged \n Student Graduation Rate")
+```
+
+
+From the map above we can see that high school graduation rates vary by state. In general, those students who come from the north eastern portion of the country perform better. And the graduation rate is low in the west expect for California.   
+
+### What are the differences in graduation rates between different races?  
+.
+
+```{r, echo = F}
+rdata = data.frame('rate' = as.numeric(cbind(data$ALL_RATE_1112,data$MAS_RATE_1112,
+                                             data$MBL_RATE_1112,data$MHI_RATE_1112,
+                                             data$MWH_RATE_1112,data$CWD_RATE_1112,
+                                             data$ECD_RATE_1112)
+                                      ),
+                   'class' = c(
+                            rep("ALL", length(data$ALL_RATE_1112)), 
+                            rep("Asian", length(data$MAS_RATE_1112)),
+                            rep("Black", length(data$MBL_RATE_1112)), 
+                            rep("Hispanic", length(data$MHI_RATE_1112)),
+                            rep("White", length(data$MWH_RATE_1112)), 
+                            rep("Disabled", length(data$CWD_RATE_1112)),
+                            rep("ECD", length(data$ECD_RATE_1112))
+                              )
+                  )   
+```
+
+```{r, echo = FALSE,warning=FALSE,fig.width = 10}
+ggplot(rdata, aes(x=class, y=rate, fill=class ) ) +  
+      geom_boxplot(notch = FALSE, outlier.colour="#CC6600") +
+      scale_fill_manual(name = "", values = c("#00BFFF", "#afb4db", "#b2d235","#f47920","#faa755","#f15b6c","#fedcbd")) +
+      theme(panel.background = element_rect(fill = 'white' )) +
+      ggtitle("Graduation Rates Between Different Races")  
+```
+
+ECD: economically disadvantaged
+
+As we can see, most of the students are white people. Within this plot the white students tend to perform better than others. Also, those economically disadvantaged students are more likely to graduate from high school.   
+
+
+#### How will financial conditions affect the graduation rate? What is the interaction between household income and the rate of white people? How do they contribute to the graduation rate?
+
+.
+
+```{r,fig.width = 10, echo = FALSE}
+
+wr.p1 <- ggplot(data2, aes(x=Med_HHD_Inc_ACS_08_12, y=MWH_COHORT_1112/(MWH_COHORT_1112+MHI_COHORT_1112+MBL_COHORT_1112+ MAS_COHORT_1112), color=ALL_RATE_1112)) +
+     geom_point(size=2) +
+     scale_colour_gradientn(colours=c("#3288bd","#66c2a5","#abdda4","#e6f598","#fee08b","#fdae61","#f46d43","#d53e4f"), name = "GR") +
+     xlab("") + ylab("White Students") +
+     theme_light(base_size=15) +
+     theme(strip.background = element_blank(),
+           strip.text.x     = element_blank(),
+           axis.ticks       = element_blank(),
+           axis.line        = element_blank(),
+           panel.border     = element_blank())
+
+wr.p2 <- ggplot(data2, aes(x=Med_HHD_Inc_ACS_08_12, y=MHI_COHORT_1112/(MWH_COHORT_1112+MHI_COHORT_1112+MBL_COHORT_1112+ MAS_COHORT_1112), color=ALL_RATE_1112)) +
+     geom_point(size=2) +
+     scale_colour_gradientn(colours=c("#3288bd","#66c2a5","#abdda4","#e6f598","#fee08b","#fdae61","#f46d43","#d53e4f"), name = "GR") +
+     xlab("") + ylab("Hispanic Students") +
+     theme_light(base_size=15) +
+     theme(strip.background = element_blank(),
+           strip.text.x     = element_blank(),
+           axis.ticks       = element_blank(),
+           axis.line        = element_blank(),
+           panel.border     = element_blank())
+
+wr.p3 <- ggplot(data2, aes(x=Med_HHD_Inc_ACS_08_12, y=MBL_COHORT_1112/(MWH_COHORT_1112+MHI_COHORT_1112+MBL_COHORT_1112+ MAS_COHORT_1112), color=ALL_RATE_1112)) +
+     geom_point(size=2) +
+     scale_colour_gradientn(colours=c("#3288bd","#66c2a5","#abdda4","#e6f598","#fee08b","#fdae61","#f46d43","#d53e4f"), name = "GR") +
+     xlab("") + ylab("Black Students") +
+     theme_light(base_size=15) +
+     theme(strip.background = element_blank(),
+           strip.text.x     = element_blank(),
+           axis.ticks       = element_blank(),
+           axis.line        = element_blank(),
+           panel.border     = element_blank())
+
+wr.p4 <- ggplot(data2, aes(x=Med_HHD_Inc_ACS_08_12, y=MAS_COHORT_1112/(MWH_COHORT_1112+MHI_COHORT_1112+MBL_COHORT_1112+ MAS_COHORT_1112), color=ALL_RATE_1112)) +
+     geom_point(size=2) +
+     scale_colour_gradientn(colours=c("#3288bd","#66c2a5","#abdda4","#e6f598","#fee08b","#fdae61","#f46d43","#d53e4f"), name = "GR") +
+     xlab("") + ylab("Asian/Pacific Islander Students") +
+     theme_light(base_size=15) +
+     theme(strip.background = element_blank(),
+           strip.text.x     = element_blank(),
+           axis.ticks       = element_blank(),
+           axis.line        = element_blank(),
+           panel.border     = element_blank())
+
+multiplot(wr.p1,wr.p2,wr.p3,wr.p4, cols = 2)
+```
+
+[TODO]In this plot, the x-axis is the median household income and the y-axis is the ratio of people in different races. GR stands for graduation rate. The darker points mean higher rates of graduation. The picture in the top left corner reveals very important information, this being that, almost all the green points are at the bottom of this plot. This means those schools whose students are almost all colored people have the lowest graduation rate. The rest of the pictures shows that in particular black students and asian/pacific islander students may have problems in high school. However, if the white people rate is larger than 10%, it turns out not to be the case. The graduation rate shows no pattern if there are at least 10% white students in the school.
+
+```{r, echo = F, comment=F, message=F}
+
+# par(las = 1, fg = "grey")
+# with(state.avg, {
+#   plot(y.variable ~x.variable , type = "n",
+#        ylab = "", xlab = "", xaxt = "n")
+#   symbols(x = x.variable,y = y.variable, circles = radius, inches = 0.35, bg = cols, add = T)
+# })
+```
+
+
+
+### GUIDE Regression Tree  
+
+[TREE HERE]
+
+The mean squared error of this tree is 1.055E+02 while the mean squared error of default piecewise linear least-squares regression tree is 8.507E+01. The default tree is almost the best tree we can obtain. So in general, since their mean squared error is pretty close, this tree is reliable. This tree fully supports my discovery above. In this tree, "STNAM" is the first spilt. The blue nodes on the right show the positive relationship between white people rate/household income and graduation rate. However, when I try to explain the left half of the tree, I run into some trouble. "Low_ Response_ Score" and "pct_ Vacant_CEN" are things related to the census itself which is quite hard to explain; thus, within this study, we will progress past this topic.    
+
+
+## Conclusion  
+
+[TODO] One obvious thing we have found in this report is that high school graduation rate varies from state to state. And in general, the graduation rate is lower in the west. Thus, if we want to increase the graduation rate, we must put further emphasis on the west. Another thing is that those schools with all colored students have the lowest graduation rate.
+
