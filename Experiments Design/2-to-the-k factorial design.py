@@ -4,6 +4,7 @@
 Copyright (c) 16/5/3 Yida Yin. All rights reserved.
 """
 import string
+import itertools
 
 
 def standard_order(k):
@@ -26,19 +27,43 @@ def show_block(k, contrasts):
     # show factor-level combinations that go into each block
     block = {}
     for trt in standard_order(k):
-        b = ''
+        oe = ''  # odd-even string
         for ctt in contrasts:
-            b += str(len([letter for letter in trt if letter in ctt.lower()]) % 2)  # odd_even method
-        if b in block.keys():
-            block[b].append(trt)
+            oe += str(len([letter for letter in trt if letter in ctt.lower()]) % 2)  # odd-even method
+        if oe in block.keys():
+            block[oe].append(trt)
         else:
-            block[b] = [trt]
+            block[oe] = [trt]
     return block
 
 
-def show_confounded(k, contrasts):
+def show_confounded(contrasts):
     # show al the confounded effects
-    pass
+    confounded = []
+    for i in range(1, len(contrasts)+1):
+        for combination in set(itertools.combinations(contrasts, i)):
+            r = set()
+            for single in combination:
+                for letter in single:
+                    if letter in r:
+                        r -= set(letter)
+                    else:
+                        r.add(letter)
+                confounded.append(''.join(r))
+    return set(confounded)
+
+
+def show_plus_minus(k, write=False):    # TODO
+    print "     ",
+    for i in range(1, k+1):
+        for combination in list(itertools.combinations(string.uppercase[:k], i)):
+            print ''.join(combination),
+    print
+    sd_order = standard_order(k)
+    for trt in sd_order:
+        print trt,
+
+        print
 
 
 if __name__ == "__main__":
@@ -48,3 +73,7 @@ if __name__ == "__main__":
                                 'bcd', 'abcd']
     print show_block(4, ['AD', 'BCD']) == {'11': ['ab', 'ac', 'd', 'bcd'], '10': ['a', 'abc', 'bd', 'cd'],
                                            '00': ['(1)', 'bc', 'abd', 'acd'], '01': ['b', 'c', 'ad', 'abcd']}
+    print show_confounded(['ABCF', 'ABDE', 'ACDE', 'BCDH']) == {'BEFH', 'CEDF', 'ACEH', 'ACBF', 'BEDF', 'AF', 'CB',
+                                                                'CEFH', 'ACBDFH', 'ACED', 'HD', 'ABED', 'ADFH', 'HCBD',
+                                                                'ABEH'}
+    show_plus_minus(3)
