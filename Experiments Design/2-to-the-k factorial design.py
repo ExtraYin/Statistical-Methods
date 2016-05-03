@@ -26,11 +26,11 @@ def show_block(k, contrasts):
     # show factor-level combinations that go into each block
     block = {}
     for trt in standard_order(k):
-        b = ''   # odd_even method
+        b = ''
         for ctt in contrasts:
-            b += str(len([letter for letter in trt if letter in ctt]) % 2)   # TODO
+            b += str(len([letter for letter in trt if letter in ctt.lower()]) % 2)  # odd_even method
         if b in block.keys():
-            block[b] += trt
+            block[b].append(trt)
         else:
             block[b] = [trt]
     return block
@@ -40,9 +40,11 @@ def show_confounded(k, contrasts):
     # show al the confounded effects
     pass
 
+
 if __name__ == "__main__":
     print standard_order(0) == []
     print standard_order(3) == ['(1)', 'a', 'b', 'ab', 'c', 'ac', 'bc', 'abc']
     print standard_order(4) == ['(1)', 'a', 'b', 'ab', 'c', 'ac', 'bc', 'abc', 'd', 'ad', 'bd', 'abd', 'cd', 'acd',
                                 'bcd', 'abcd']
-    print show_block(5, ['bcd', 'ace'])
+    print show_block(4, ['AD', 'BCD']) == {'11': ['ab', 'ac', 'd', 'bcd'], '10': ['a', 'abc', 'bd', 'cd'],
+                                           '00': ['(1)', 'bc', 'abd', 'acd'], '01': ['b', 'c', 'ad', 'abcd']}
