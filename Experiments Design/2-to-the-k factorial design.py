@@ -70,25 +70,29 @@ def show_confounded(contrasts):
 
 
 def generate_plus_minus(k):
-    factor = []
+    factors = []
     for i in range(1, k + 1):
-        factor += [''.join(w) for w in list(itertools.combinations(string.uppercase[:k], i))]
+        factors += [''.join(w) for w in list(itertools.combinations(string.uppercase[:k], i))]
     coded = np.array([np.tile(np.repeat([-1, 1], 2 ** i), [2 ** (k - i - 1)]) for i in range(k)])
-    coded = coded.transpose()
-    for i in range(k, len(factor)):
-        print i
+    # coded = coded.transpose()
+    inter = np.array(
+        [reduce(lambda x, y: x * y, coded[[string.uppercase.index(element) for element in factors[i]]]) for i in
+         range(k, len(factors))])
+    coded_matrix = np.concatenate((coded, inter)).transpose()
+    return factors, coded_matrix
 
 
 def show_plus_minus(k, write=False):  # TODO
-    print ' ' * 7,
-    for i in range(1, k + 1):
-        for combination in list(itertools.combinations(string.uppercase[:k], i)):
-            print ''.join(combination) + '  ',
+    factors, coded = generate_plus_minus(k)
+    print ' ' * 5,
+    for fac in factors:
+        print fac + ' ',
     print
     sd_order = standard_order(k)
-    for trt in sd_order:
-        print trt,
-
+    for i, trt in enumerate(sd_order):
+        print '%-5s' % trt,
+        for item in coded[i]:
+            print '-  ' if item == -1 else '+  ',
         print
 
 
@@ -102,5 +106,4 @@ if __name__ == "__main__":
     print show_confounded(['ABCF', 'ABDE', 'ACDE', 'BCDH']) == {'BEFH', 'CEDF', 'ACEH', 'ACBF', 'BEDF', 'AF', 'CB',
                                                                 'CEFH', 'ACBDFH', 'ACED', 'HD', 'ABED', 'ADFH', 'HCBD',
                                                                 'ABEH'}
-    show_plus_minus(3)
-    generate_plus_minus(3)
+    show_plus_minus(4)
