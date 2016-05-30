@@ -1,0 +1,57 @@
+ \documentclass{article}
+ %File creation date: 05/30/16  at 20:54
+ \usepackage{pstricks,pst-node,pst-tree}
+ \usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+ %\usepackage{lscape}
+ \pagestyle{empty}
+ \begin{document}
+ %\begin{landscape}
+ \begin{center}
+\psset{linecolor=black,tnsep=1pt,tndepth=0cm,tnheight=0cm,treesep=.6cm,levelsep=52pt,radius=10pt}
+%     \def\psedge#1#2{\ncangle{#2}{#1}}
+  \pstree[treemode=D]{\Tcircle{ 1 }~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{x}}\\$\leq$-.7113}}}{
+ \Tcircle[fillcolor=red,fillstyle=solid]{ 2 }~{\makebox[0pt][c]{red}}
+    ~[tnpos=l]{\shortstack[r]{2\\99}}
+  \pstree[treemode=D]{\Tcircle{ 3 }~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{y}}\\$\leq$51.90}}}{
+  \pstree[treemode=D]{\Tcircle{ 6 }~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{x}}\\$\leq_*$12.90}}}{
+  \pstree[treemode=D]{\Tcircle{\small 12}~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{x}}\\$\leq$1.27}}}{
+  \pstree[treemode=D]{\Tcircle{\small 24}~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{y}}\\$\leq$15.02}}}{
+ \Tcircle[fillcolor=red,fillstyle=solid]{\small 48}~{\makebox[0pt][c]{red}}
+    ~[tnpos=l]{\shortstack[r]{0\\15}}
+ \Tcircle[fillcolor=green,fillstyle=solid]{\small 49}~{\makebox[0pt][c]{blue}}
+    ~[tnpos=r]{\shortstack[r]{13\\0}}
+   }
+ \Tcircle[fillcolor=red,fillstyle=solid]{\small 25}~{\makebox[0pt][c]{red}}
+    ~[tnpos=r]{\shortstack[r]{4\\67}}
+   }
+ \Tcircle[fillcolor=green,fillstyle=solid]{\small 13}~{\makebox[0pt][c]{blue}}
+    ~[tnpos=r]{\shortstack[r]{16\\0}}
+   }
+  \pstree[treemode=D]{\Tcircle{ 7 }~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{x}}\\$\leq_*$11.94}}}{
+  \pstree[treemode=D]{\Tcircle{\small 14}~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{y}}\\$\leq$109.35}}}{
+  \pstree[treemode=D]{\Tcircle{\small 28}~[tnpos=l]{\shortstack[r]{\texttt{\detokenize{x}}\\$\leq_*$5.93}}}{
+ \Tcircle[fillcolor=green,fillstyle=solid]{\small 56}~{\makebox[0pt][c]{blue}}
+    ~[tnpos=l]{\shortstack[r]{34\\1}}
+ \Tcircle[fillcolor=red,fillstyle=solid]{\small 57}~{\makebox[0pt][c]{red}}
+    ~[tnpos=r]{\shortstack[r]{3\\27}}
+   }
+ \Tcircle[fillcolor=green,fillstyle=solid]{\small 29}~{\makebox[0pt][c]{blue}}
+    ~[tnpos=r]{\shortstack[r]{70\\1}}
+   }
+ \Tcircle[fillcolor=green,fillstyle=solid]{\small 15}~{\makebox[0pt][c]{blue}}
+    ~[tnpos=r]{\shortstack[r]{68\\0}}
+ }
+ }
+ }
+ \end{center}
+GUIDE  0.50-SE classification tree for predicting \texttt{\detokenize{color}} using
+ estimated priors
+ and unit misclassification costs.
+At each split, an observation goes to the left branch 
+ if and only if the condition is satisfied.
+ The symbol `$\leq_*$' stands for `$\leq$ or missing'.
+Predicted classes (based on estimated misclassification cost) printed below terminal nodes;
+ sample sizes for \texttt{\detokenize{color}} =
+ blue and red, respectively, beside nodes.
+ %\end{landscape}
+ \end{document}

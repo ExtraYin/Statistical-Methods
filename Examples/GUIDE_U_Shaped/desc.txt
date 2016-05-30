@@ -1,0 +1,6 @@
+U_Shaped.txt
+NA
+column, varname, vartype
+1 x n
+2 y n
+3 color d

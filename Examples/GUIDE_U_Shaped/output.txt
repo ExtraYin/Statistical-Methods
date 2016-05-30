@@ -1,0 +1,307 @@
+             GGG   U   U  I  DDDD   EEEE
+            G   G  U   U  I  D   D  E
+            G      U   U  I  D   D  E
+            G  GG  U   U  I  D   D  EEE
+            G   G  U   U  I  D   D  E
+            G   G  U   U  I  D   D  E
+             GGG    UUU   I  DDDD   EEEE
+   
+ GUIDE Classification and Regression Trees and Forests
+ Compiled with GFortran 5.2.0 on Mac OS X El Capitan 10.11
+ Version 20.4 (Build date: November 9, 2015)       
+ Copyright (c) 1997-2015 Wei-Yin Loh. All rights reserved.
+ This software is based upon work supported by the U.S. Army Research Office,
+ the National Science Foundation and the National Institutes of Health.
+  
+ This job was started on: 05/30/16 at 20:54
+  
+ Classification tree
+ Pruning by cross-validation
+ Data description file: desc.txt
+ Training sample file: U_Shaped.txt
+ Missing value code: NA
+ Warning: N variables changed to S
+ Dependent variable is color
+ Number of records in data file: 420
+ Length of longest data entry: 20
+ Number of classes =  2
+ Class      #Cases    Proportion
+ blue          210    0.50000000
+ red           210    0.50000000
+  
+ Summary information (without x variables)
+ d=dependent, b=split and fit cat variable using 0-1 dummies, c=split-only categorical,
+ n=split and fit numerical, f=fit-only numerical, s=split-only numerical, w=weight
+  Column  Name            Minimum      Maximum   #Categories       #Missing
+       1  x          s  -1.1224E+01   2.1786E+01
+       2  y          s  -1.8367E+01   1.5094E+02
+       3  color      d                                     2
+  
+      Total  #cases w/   #missing
+     #cases    miss. D  ord. vals   #X-var   #N-var   #F-var   #S-var   #B-var   #C-var
+        420          0          0        0        0        0        2        0        0
+ No. cases used for training: 420
+  
+ Univariate split highest priority
+ Interaction and linear splits 2nd and 3rd priorities
+ Pruning by v-fold cross-validation, with v =  10
+ Selected tree is based on mean of CV estimates
+ Simple node models
+ Estimated priors
+ Unit misclassification costs
+ Split values for N and S variables based on exhaustive search
+ Max number of split levels =  10
+ Minimum node size =  3
+  
+ Pruning sequence
+   Subtree     Pruned  #Terminal        True           Geometric
+    number       node      nodes        alpha             mean
+         0          0         14       0.0000          0.0000    
+         1         57         13       0.0000          0.0000    
+         2          2         11      0.11905E-02     0.16836E-02
+         3         25          9      0.23810E-02     0.60703E-02
+         4         12          7      0.15476E-01     0.17169E-01
+         5          7          4      0.19048E-01     0.26937E-01
+         6          6          3      0.38095E-01     0.66667E-01
+         7          3          2      0.11667         0.16415    
+         8          1          1      0.23095         0.17977+309
+  
+ Number of SE's for pruned tree =   5.0000E-01
+  
+ Size and CV mean cost and SE of subtrees:
+  Tree   #Tnodes  Mean Cost   SE(Mean)   BSE(Mean)  Median Cost  BSE(Median)
+    1       13   5.476E-02   1.110E-02   1.172E-02   4.762E-02   1.299E-02
+    2       11   5.476E-02   1.110E-02   1.172E-02   4.762E-02   1.299E-02
+    3**      9   5.476E-02   1.110E-02   1.146E-02   4.762E-02   1.890E-02
+    4++      7   7.381E-02   1.276E-02   1.570E-02   4.762E-02   2.315E-02
+    5        4   9.524E-02   1.432E-02   1.730E-02   7.143E-02   3.232E-02
+    6        3   1.762E-01   1.859E-02   1.685E-02   1.667E-01   1.672E-02
+    7        2   3.000E-01   2.236E-02   9.914E-03   3.095E-01   1.178E-02
+    8        1   5.000E-01   2.440E-02   3.409E-03   5.000E-01   5.324E-04
+  
+ 0-SE tree based on mean is marked with *
+ 0-SE tree based on median is marked with +
+ Selected-SE tree based on mean using naive SE is marked with **
+ Selected-SE tree based on mean using bootstrap SE is marked with --
+ Selected-SE tree based on median and bootstrap SE is marked with ++
+ ** tree same as -- tree
+ + tree same as ++ tree
+ * tree same as ** tree
+ * tree same as -- tree
+  
+  
+ Following tree is based on mean CV with naive SE estimate (**).
+  
+ Structure of final tree. Each terminal node is marked with a T.
+  
+ Node cost is node misclassification cost divided by number of training cases
+        Node    Total    Train    Predicted        Node    Split          Interacting
+       label    cases    cases    class            cost    variables      variable
+           1      420      420    blue           5.000E-01 x 
+           2T     101      101    red            1.980E-02 y :x
+           3      319      319    blue           3.480E-01 y 
+           6      115      115    red            2.870E-01 x 
+          12       99       99    red            1.717E-01 x 
+          24       28       28    red            4.643E-01 y 
+          48T      15       15    red            0.000E+00 - 
+          49T      13       13    blue           0.000E+00 - 
+          25T      71       71    red            5.634E-02 x :y
+          13T      16       16    blue           0.000E+00 - 
+           7      204      204    blue           1.422E-01 x 
+          14      136      136    blue           2.132E-01 y 
+          28       65       65    blue           4.308E-01 x 
+          56T      35       35    blue           2.857E-02 - 
+          57T      30       30    red            1.000E-01 x 
+          29T      71       71    blue           1.408E-02 - 
+          15T      68       68    blue           0.000E+00 - 
+  
+ Number of terminal nodes of final tree: 9
+ Total number of nodes of final tree:    17
+  
+ Classification tree:
+  
+  Node 1: x <=   -0.71128
+    Node 2: red
+  Node 1: x >   -0.71128 or NA
+    Node 3: y <=   51.89937
+      Node 6: x <=   12.89910 or NA
+        Node 12: x <=    1.26662
+          Node 24: y <=   15.02200
+            Node 48: red
+          Node 24: y >   15.02200 and not NA
+            Node 49: blue
+        Node 12: x >    1.26662 or NA
+          Node 25: red
+      Node 6: x >   12.89910 and not NA
+        Node 13: blue
+    Node 3: y >   51.89937 or NA
+      Node 7: x <=   11.94475 or NA
+        Node 14: y <=  1.09354E+02
+          Node 28: x <=    5.92778 or NA
+            Node 56: blue
+          Node 28: x >    5.92778 and not NA
+            Node 57: red
+        Node 14: y >  1.09354E+02 or NA
+          Node 29: blue
+      Node 7: x >   11.94475 and not NA
+        Node 15: blue
+ 
+ ***************************************************************
+ 
+  
+ Node 1: Intermediate node
+ A case goes into Node 2 if x <= -7.1127840E-01
+ x mean =  5.0198E+00
+ Class      Number  ClassPrior
+ blue          210     0.50000
+ red           210     0.50000
+ Number of training cases misclassified =  210
+ Predicted class is blue
+ Class      Number  ClassPrior
+ blue          210     0.50000
+ red           210     0.50000
+ Number of training cases misclassified =  210
+ Predicted class is blue
+ ----------------------------
+ Node 2: Terminal node
+ Class      Number  ClassPrior
+ blue            2     0.01980
+ red            99     0.98020
+ Number of training cases misclassified =  2
+ Predicted class is red
+ ----------------------------
+ Node 3: Intermediate node
+ A case goes into Node 6 if y <=  5.1899368E+01
+ y mean =  7.3554E+01
+ Class      Number  ClassPrior
+ blue          208     0.65204
+ red           111     0.34796
+ Number of training cases misclassified =  111
+ Predicted class is blue
+ ----------------------------
+ Node 6: Intermediate node
+ A case goes into Node 12 if x <=  1.2899104E+01 or NA
+ x mean =  5.3126E+00
+ Class      Number  ClassPrior
+ blue           33     0.28696
+ red            82     0.71304
+ Number of training cases misclassified =  33
+ Predicted class is red
+ ----------------------------
+ Node 12: Intermediate node
+ A case goes into Node 24 if x <=  1.2666239E+00
+ x mean =  3.0761E+00
+ Class      Number  ClassPrior
+ blue           17     0.17172
+ red            82     0.82828
+ Number of training cases misclassified =  17
+ Predicted class is red
+ ----------------------------
+ Node 24: Intermediate node
+ A case goes into Node 48 if y <=  1.5021998E+01
+ y mean =  1.6022E+01
+ Class      Number  ClassPrior
+ blue           13     0.46429
+ red            15     0.53571
+ Number of training cases misclassified =  13
+ Predicted class is red
+ ----------------------------
+ Node 48: Terminal node
+ Class      Number  ClassPrior
+ blue            0     0.00000
+ red            15     1.00000
+ Number of training cases misclassified =  0
+ Predicted class is red
+ ----------------------------
+ Node 49: Terminal node
+ Class      Number  ClassPrior
+ blue           13     1.00000
+ red             0     0.00000
+ Number of training cases misclassified =  0
+ Predicted class is blue
+ ----------------------------
+ Node 25: Terminal node
+ Class      Number  ClassPrior
+ blue            4     0.05634
+ red            67     0.94366
+ Number of training cases misclassified =  4
+ Predicted class is red
+ ----------------------------
+ Node 13: Terminal node
+ Class      Number  ClassPrior
+ blue           16     1.00000
+ red             0     0.00000
+ Number of training cases misclassified =  0
+ Predicted class is blue
+ ----------------------------
+ Node 7: Intermediate node
+ A case goes into Node 14 if x <=  1.1944753E+01 or NA
+ x mean =  1.0046E+01
+ Class      Number  ClassPrior
+ blue          175     0.85784
+ red            29     0.14216
+ Number of training cases misclassified =  29
+ Predicted class is blue
+ ----------------------------
+ Node 14: Intermediate node
+ A case goes into Node 28 if y <=  1.0935405E+02
+ y mean =  1.0560E+02
+ Class      Number  ClassPrior
+ blue          107     0.78676
+ red            29     0.21324
+ Number of training cases misclassified =  29
+ Predicted class is blue
+ ----------------------------
+ Node 28: Intermediate node
+ A case goes into Node 56 if x <=  5.9277811E+00 or NA
+ x mean =  5.9791E+00
+ Class      Number  ClassPrior
+ blue           37     0.56923
+ red            28     0.43077
+ Number of training cases misclassified =  28
+ Predicted class is blue
+ ----------------------------
+ Node 56: Terminal node
+ Class      Number  ClassPrior
+ blue           34     0.97143
+ red             1     0.02857
+ Number of training cases misclassified =  1
+ Predicted class is blue
+ ----------------------------
+ Node 57: Terminal node
+ Class      Number  ClassPrior
+ blue            3     0.10000
+ red            27     0.90000
+ Number of training cases misclassified =  3
+ Predicted class is red
+ ----------------------------
+ Node 29: Terminal node
+ Class      Number  ClassPrior
+ blue           70     0.98592
+ red             1     0.01408
+ Number of training cases misclassified =  1
+ Predicted class is blue
+ ----------------------------
+ Node 15: Terminal node
+ Class      Number  ClassPrior
+ blue           68     1.00000
+ red             0     0.00000
+ Number of training cases misclassified =  0
+ Predicted class is blue
+ ----------------------------
+  
+ 
+ Classification matrix for training sample:
+ Predicted      True class
+ class           blue       red
+ blue             201         2
+ red                9       208
+ Total            210       210
+ 
+ Number of cases used for tree construction =  420
+ Number misclassified =  11
+ Resubstitution est. of mean misclassification cost =    2.6190476190476191E-002
+ 
+ Observed and fitted values are stored in node.txt
+ LaTeX code for tree is in tree.tex
+ Elapsed time in seconds:   0.204368010    

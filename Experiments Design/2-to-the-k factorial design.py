@@ -107,3 +107,4 @@ if __name__ == "__main__":
                                                                 'CEFH', 'ACBDFH', 'ACED', 'HD', 'ABED', 'ADFH', 'HCBD',
                                                                 'ABEH'}
     show_plus_minus(4)
+
