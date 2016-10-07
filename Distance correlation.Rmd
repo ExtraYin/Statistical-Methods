@@ -6,18 +6,15 @@ output:
 ---
 
 #### Distance correlation    
-In statistics and in probability theory, distance correlation is a measure of statistical dependence between two random variables or two random vectors.    
+[Wiki] In statistics and in probability theory, distance correlation is a measure of statistical dependence between two random variables or two random vectors.    
+
 
 ```{r}
 distance_cov = function(X, Y){
     stopifnot(length(X) == length(Y))
     n = length(X)
-    a = matrix(NA, n, n)
-    b = matrix(NA, n, n)
-    for(i in 1:n){
-        a[,i] = abs(rep(X[i], n) - X)
-        b[,i] = abs(rep(Y[i], n) - Y)
-    }
+    a = abs(matrix(rep(X, n), nrow=n, byrow=T) - matrix(rep(X, n), nrow=n))
+    b = abs(matrix(rep(Y, n), nrow=n, byrow=T) - matrix(rep(Y, n), nrow=n))
     ad = apply(a, 1, mean)  # aj. = a.k
     add = sum(a) / (n*n)
     bd = apply(b, 1, mean)  # bj. = b.k
