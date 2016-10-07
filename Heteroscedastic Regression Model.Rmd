@@ -1,0 +1,70 @@
+---
+title: "Heteroscedastic Regression Model"
+output: html_notebook
+---
+
+#### Part I: 
+Model: $Y = X^T\beta_0 + \epsilon$, where $E(\epsilon|X)=0, Var(\epsilon|X)=\sigma_0^2(X)$
+```{r}
+set.seed(2)
+X = seq(-10, 10, 0.1)
+sigma = abs(X+5) + 0.1
+epsilon = rnorm(length(X), 0, sigma)
+beta_t = 0.123
+Y = X * beta_t + epsilon
+plot(X, Y)
+```
+
+Method 1: Ordinary Least Square  
+```{r}
+m1 = lm(Y ~ X)
+plot(X, Y)
+abline(m1, col="red")
+```
+
+Method 2: Weighted Least Square  
+```{r}
+m2 = lm(Y ~ X, weights = 1/sigma)
+plot(X, Y)
+abline(m2, col="red")
+```
+
+Method 3: Semi-Parametrix Two Step Estimator   
+```{r}
+r2 = (m1$residuals)^2 
+plot(X, r2)
+# local linear estimator of r^2
+library(KernSmooth)
+h <- dpill(X, r2)
+fit <- locpoly(X, r2, degree=0, bandwidth=h)
+lines(fit)
+# ----------------
+fit_pred = approxfun(fit$x, fit$y)
+m3 = lm(Y ~ X, weights=1/fit_pred(X))
+plot(X, Y)
+abline(m2, col="red")
+```
+
+##### Compare    
+```{r}
+plot(X, Y)
+abline(0, beta_t)
+abline(m1, col="blue")
+abline(m2, col="red")
+abline(m3, col="green")
+```
+
+
+#### Part II:  
+Model: $Y = X^T\beta_0 + \epsilon$, where $E(\epsilon|X)=0, f_{\epsilon|X}(\bullet|X)$ is Known/Unknown.    
+
+
+
+
+
+
+
+
+
+
+

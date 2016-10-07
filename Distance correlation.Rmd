@@ -1,0 +1,116 @@
+---
+title: "Distance correlation"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+#### Distance correlation    
+In statistics and in probability theory, distance correlation is a measure of statistical dependence between two random variables or two random vectors.    
+
+```{r}
+distance_cov = function(X, Y){
+    stopifnot(length(X) == length(Y))
+    n = length(X)
+    a = matrix(NA, n, n)
+    b = matrix(NA, n, n)
+    for(i in 1:n){
+        a[,i] = abs(rep(X[i], n) - X)
+        b[,i] = abs(rep(Y[i], n) - Y)
+    }
+    ad = apply(a, 1, mean)  # aj. = a.k
+    add = sum(a) / (n*n)
+    bd = apply(b, 1, mean)  # bj. = b.k
+    bdd = sum(b) / (n*n)
+    A = a - matrix(rep(ad, n), ncol=n) - matrix(rep(ad, n), ncol=n, byrow=T) + matrix(rep(add, n*n), ncol=n)
+    B = b - matrix(rep(bd, n), ncol=n) - matrix(rep(bd, n), ncol=n, byrow=T) + matrix(rep(bdd, n*n), ncol=n)
+    res = 0
+    for(j in 1:n){
+        for(k in 1:n){
+            res = res + A[j,k] * B[j,k]
+        }
+    }
+    return(sqrt(res/n^2))
+}
+
+distance_corr = function(X, Y){
+    return(
+        distance_cov(X,Y) / sqrt(distance_cov(X,X)*distance_cov(Y,Y))
+        )
+}
+```
+
+#### Generate Data
+```{r}
+set.seed(2)
+n = 100
+X = runif(n, -1, 1) + rnorm(n, 0, 0.05)
+Y = X^2 + rnorm(n, 0, 0.2)
+plot(X, Y, asp=1)
+distance_corr(X, Y)
+```
+
+```{r}
+set.seed(2)
+n = 100
+X = runif(n, -1, 1) + rnorm(n, 0, 0.05)
+Y = X^2 + rnorm(n, 0, 0.05)
+plot(X, Y, asp=1)
+distance_corr(X, Y)
+```
+
+
+```{r}
+set.seed(2)
+n = 100
+X = runif(n, -1, 1) + rnorm(n, 0, 0.1)
+Y1 = X[1:(n/2)]^2 + rnorm(n/2, 0, 0.1) - 1
+Y2 = (-1)*X[((n/2)+1):n]^2 + rnorm(n/2, 0, 0.1) + 1
+Y = c(Y1, Y2)
+plot(X, Y, asp=1)
+distance_corr(X, Y)
+```
+
+
+```{r}
+set.seed(2)
+n = 100
+X = runif(n, -1, 1) + rnorm(n, 0, 0.05)
+Y = X + rnorm(n, 0, 0.05)
+plot(X, Y, asp=1)
+distance_corr(X, Y)
+```
+
+```{r}
+set.seed(2)
+n = 100
+X = rnorm(n, 0, 1)
+Y = rnorm(n, 0, 1)
+plot(X, Y, asp=1)
+distance_corr(X, Y)
+```
+
+
+```{r}
+set.seed(2)
+n = 100
+X = rnorm(n, 0, 1)
+Y = sin(X*2.5+1.6) + rnorm(n, 0, 0.1)
+plot(X, Y, asp=1)
+distance_corr(X, Y)
+```
+
+
+```{r}
+set.seed(2)
+n = 100
+X = rnorm(n, 0, 1)
+Y = sin(X*2.5+1.6) + rnorm(n, 0, 0.5)
+plot(X, Y, asp=1)
+distance_corr(X, Y)
+```
+
+
+
+
+
