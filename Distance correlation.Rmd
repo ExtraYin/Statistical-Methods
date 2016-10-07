@@ -10,24 +10,20 @@ output:
 
 
 ```{r}
+# library(energy)
+# energy::dcov
 distance_cov = function(X, Y){
     stopifnot(length(X) == length(Y))
     n = length(X)
-    a = abs(matrix(rep(X, n), nrow=n, byrow=T) - matrix(rep(X, n), nrow=n))
+    a = abs(matrix(rep(X, n), nrow=n, byrow=T) - matrix(rep(X, n), nrow=n))  # a[j,k] = ||X[j] - X[k]||
     b = abs(matrix(rep(Y, n), nrow=n, byrow=T) - matrix(rep(Y, n), nrow=n))
     ad = apply(a, 1, mean)  # aj. = a.k
     add = sum(a) / (n*n)
     bd = apply(b, 1, mean)  # bj. = b.k
     bdd = sum(b) / (n*n)
-    A = a - matrix(rep(ad, n), ncol=n) - matrix(rep(ad, n), ncol=n, byrow=T) + matrix(rep(add, n*n), ncol=n)
-    B = b - matrix(rep(bd, n), ncol=n) - matrix(rep(bd, n), ncol=n, byrow=T) + matrix(rep(bdd, n*n), ncol=n)
-    res = 0
-    for(j in 1:n){
-        for(k in 1:n){
-            res = res + A[j,k] * B[j,k]
-        }
-    }
-    return(sqrt(res/n^2))
+    A = a - matrix(rep(ad, n), ncol=n) - matrix(rep(ad, n), ncol=n, byrow=T) + add   # A[j,k] = a[j,k] - a[j,.] - a[.,k] + a[..]
+    B = b - matrix(rep(bd, n), ncol=n) - matrix(rep(bd, n), ncol=n, byrow=T) + bdd
+    return(sqrt(sum(A*B)/n^2))
 }
 
 distance_corr = function(X, Y){
