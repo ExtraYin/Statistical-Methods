@@ -1,0 +1,34 @@
+---
+title: "Partially Linear Model"
+output: html_notebook
+---
+
+Data: $\{Y_i, X_{i1}, X_{i2}, \dots, X_{id}, i=1,2,\dots,n\}$  
+Partially Linear Model: $Y_i = \eta_0(T_i) + X_i^T\beta_0+\epsilon_i$, $X=(X_1,\dots,X_p)^T \in R^{\ p}, T\in R^{\ d-p}$
+
+```{r}
+# generate data
+set.seed(123)
+n = 50
+X = matrix(c(rnorm(n, 5, 10), rnorm(n), rnorm(n, 3, 3), rbeta(n, 2.2, 0.6), rgamma(n, 1.6), runif(n, 0, 20)), nrow=n)
+Y = apply(X, 1, function(X){0.5*(X[1])^2 + 3*X[2] + 3*X[3] + 4*X[4] + 4*X[5] + 4*X[6] })
+plot(Y)
+```
+
+### Model 1
+
+
+### Model 2:  
+
+Yatchew, Adonis. "An elementary estimator of the partial linear model." Economics letters 57.2 (1997): 135-143.   
+
+Assume: $dim(T) \le 3$    
+
+```{r}
+Y = Y[order(X[,1])]
+X = X[order(X[,1]),]
+diffY = Y[2:length(Y)] - Y[1:(length(Y)-1)]
+diffX = X[2:nrow(X),] - X[1:(nrow(X)-1),]
+diffX = diffX[,-1]
+lm(diffY ~ 0 + diffX)
+```

@@ -58,6 +58,18 @@ abline(m3, col="green")
 #### Part II:  
 Model: $Y = X^T\beta_0 + \epsilon$, where $E(\epsilon|X)=0, f_{\epsilon|X}(\bullet|X)$ is Known/Unknown.    
 
+```{r}
+set.seed(2)
+X = seq(-10, 10, 0.1)
+sigma = abs(X+5) + 0.1
+epsilon = rnorm(length(X), 0, sigma)
+beta_t = 0.123
+Y = X * beta_t + epsilon
+plot(X, Y)
+```
+
+
+
 
 
 
