@@ -11,8 +11,8 @@ Partially Linear Model: $Y_i = \eta_0(T_i) + X_i^T\beta_0+\epsilon_i$, $X=(X_1,\
 set.seed(123)
 n = 50
 X = matrix(c(rnorm(n, 5, 10), rnorm(n), rnorm(n, 3, 3), rbeta(n, 2.2, 0.6), rgamma(n, 1.6), runif(n, 0, 20)), nrow=n)
-Y = apply(X, 1, function(X){0.5*(X[1])^2 + 3*X[2] + 3*X[3] + 4*X[4] + 4*X[5] + 4*X[6] })
-plot(Y)
+Y = apply(X, 1, function(X){0.5*(X[1])^2 + 3*X[2] + 3*X[3] + 4*X[4] + 4*X[5] + 5*X[6] })
+pairs(cbind(Y,X))
 ```
 
 ### Model 1
@@ -30,5 +30,7 @@ X = X[order(X[,1]),]
 diffY = Y[2:length(Y)] - Y[1:(length(Y)-1)]
 diffX = X[2:nrow(X),] - X[1:(nrow(X)-1),]
 diffX = diffX[,-1]
-lm(diffY ~ 0 + diffX)
+model1 = lm(diffY ~ 0 + diffX)
+resF = (Y - X[,-1] %*% model1$coefficients)
+plot(resF ~ X[,1])
 ```
