@@ -1,0 +1,73 @@
+---
+title: "Variational-inference"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# generating data
+library(Rmpfr)
+one = mpfr(1, precBits=10*log2(10))
+
+set.seed(122)
+mu0 = 1; lambda0 = 2; a0 = 1; b0 = 1
+mu_t = 0; lambda_t = 1; a_t = 4; b_t = 5
+
+tau = rgamma(1, a_t, b_t)
+mu = rnorm(1, mu_t, (lambda_t*tau)^(-0.5))
+X = rnorm(100, mu, (tau)^(-0.5))
+```
+
+```{r}
+# theoretical posterior distribution
+n = length(X)
+mu_n = (lambda0*mu0 + n*mean(X)) / (lambda0+n)
+lambda_n = lambda0+n
+a_n = a0+n/2
+b_n = b0+0.5*sum((X-mean(X))^2)+(lambda0*n*(mean(X)-mu0)^2)/(2*(lambda0+n))
+
+print(mu_n)   # mu_n
+print(a_n/b_n)   # tau_n
+```
+
+
+```{r}
+put = function(u, t, mu=mu_n, lambda=lambda_n, a=a_n, b=b_n){
+    p = exp(-lambda*t/2*(u-mu)^2) * t^(a-1) * exp(-b*t)
+    return(p)
+}
+x = seq(-1.5,0,0.01)
+y = seq(0.1,1.5,0.01)
+Z = matrix(NA, ncol=length(x), nrow=length(y))
+for(i in 1:length(x)){
+    Z[,i] = put(x[i], y)
+}
+contour(x, y, t(Z))
+```
+
+
+```{r}
+# variational-inference
+
+n = length(X)
+qt = 1
+eqt = 1
+for(i in 1:500){
+    equ = (n*mean(X)+lambda0*mu0)/(n+lambda0)
+    vqu = eqt*(n+lambda0)
+    equ2 = vqu + equ^2
+    
+    a = n/2+a0-1
+    b = b0 + 0.5 * ((n+lambda0)*equ2 - 2*(n*mean(X)+lambda0*mu0)*equ +sum(X^2) + lambda0*mu0^2)
+    eqt = a / b
+}
+print(equ)
+print(eqt)
+```
+
+
+
+
